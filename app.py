@@ -83,7 +83,8 @@ def receber_dados():
         print(f"❌ Erro no servidor: {e}")
         return jsonify({"message": f"Erro ao salvar os dados: {str(e)}"}), 500
 
+criar_tabela_se_nao_existir()
+
 # Inicialização
 if __name__ == '__main__':
-    criar_tabela_se_nao_existir()
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
