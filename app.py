@@ -3,6 +3,7 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 from flask_cors import CORS
+from tabulate import tabulate  # <-- Adicionado para exibir no terminal
 
 # Carrega variáveis de ambiente do .env
 load_dotenv()
@@ -83,8 +84,32 @@ def receber_dados():
         print(f"❌ Erro no servidor: {e}")
         return jsonify({"message": f"Erro ao salvar os dados: {str(e)}"}), 500
 
+# 🚀 NOVA ROTA ADICIONADA: /consultar
+@app.route('/consultar', methods=['GET'])
+def consultar_candidatos():
+    try:
+        conn = conectar()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, nome, data_nascimento, telefone, email, cpf, curriculo FROM candidatos;")
+        rows = cursor.fetchall()
+        colnames = [desc[0] for desc in cursor.description]
+        cursor.close()
+        conn.close()
+
+        print("📋 Candidatos cadastrados:")
+        print(tabulate(rows, headers=colnames, tablefmt='grid'))
+
+        return jsonify([
+            dict(zip(colnames, row)) for row in rows
+        ]), 200
+
+    except Exception as e:
+        print(f"❌ Erro ao consultar candidatos: {e}")
+        return jsonify({"message": f"Erro ao consultar candidatos: {str(e)}"}), 500
+
 criar_tabela_se_nao_existir()
 
 # Inicialização
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+        
